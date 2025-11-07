@@ -1,0 +1,9 @@
+{
+  "admin": {
+    "username": "admin",
+    "hashed_password": "s/4HDMJKj9plCw0YcgJ0Lh0W1AZ8qfiK6cAN2Rqp1mmNl/8PyQ1Ni28H7gJLQiLZ",
+    "email": "admin@gmail.com",
+    "created_at": "2025-11-07T15:47:31.830745",
+    "is_active": true
+  }
+}
