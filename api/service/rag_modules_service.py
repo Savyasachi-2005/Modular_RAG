@@ -103,11 +103,11 @@ class RAGModulesService:
             logger.error(f"Error in pre-retrieval (HyDE) module: {e}")
             return query  # Fallback to original query
 
-    async def retrieval_module(self, query: str, top_k: int = 10, username: str = None) -> List[Dict[str, Any]]:
+    async def retrieval_module(self, query: str, top_k: int = 10, username: str = None, documents: List[str] = None) -> List[Dict[str, Any]]:
         """
         [Module: Retrieval] Retrieves relevant PARENT chunks using the Small-to-Big strategy.
         1. Embed the (potentially enhanced) query.
-        2. Retrieve the top_k CHILD chunks from Pinecone (filtered by username if provided).
+        2. Retrieve the top_k CHILD chunks from Pinecone (filtered by username and documents if provided).
         3. Fetch the corresponding PARENT chunks linked to these child chunks.
 
         Concept from Paper: Small-to-Big Retrieval
@@ -118,8 +118,8 @@ class RAGModulesService:
                 logger.warning("Failed to get query embedding")
                 return []
 
-            # 1. Retrieve the top CHILD chunks (filtered by username)
-            child_results = await pinecone_service.query_vectors(query_embedding, top_k, username=username)
+            # 1. Retrieve the top CHILD chunks (filtered by username and documents)
+            child_results = await pinecone_service.query_vectors(query_embedding, top_k, username=username, documents=documents)
             
             if not child_results:
                 if username:

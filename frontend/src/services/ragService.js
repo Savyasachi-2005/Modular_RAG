@@ -1,8 +1,22 @@
 import api from "./api";
 
 export const ragService = {
-  async query(queryText, topK = 5, sessionId = null) {
-    const url = sessionId ? `/rag/query?session_id=${sessionId}` : "/rag/query";
+  async query(queryText, topK = 5, sessionId = null, selectedDocuments = []) {
+    let url = '/rag/query';
+    const params = new URLSearchParams();
+    
+    if (sessionId) {
+      params.append('session_id', sessionId);
+    }
+    
+    if (selectedDocuments.length > 0) {
+      selectedDocuments.forEach(doc => params.append('documents', doc));
+    }
+    
+    if (params.toString()) {
+      url += '?' + params.toString();
+    }
+    
     const response = await api.post(url, {
       query: queryText,
       top_k: topK,

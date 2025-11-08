@@ -30,6 +30,7 @@ export function AuthProvider({ children }) {
 
     setUser(userInfo.user);
     setIsAuthenticated(true);
+    
     return data;
   };
 

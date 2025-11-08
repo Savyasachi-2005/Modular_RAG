@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Card } from '../common/Card';
+import { DocumentViewer } from './DocumentViewer';
 
 export function DocumentList({ documents }) {
+  const [selectedDocument, setSelectedDocument] = useState(null);
   if (!documents || documents.length === 0) {
     return (
       <div className="text-center py-12">
@@ -16,7 +19,7 @@ export function DocumentList({ documents }) {
   return (
     <div className="grid gap-4">
       {documents.map((doc, index) => (
-        <Card key={index} hover className="cursor-pointer">
+        <Card key={index} hover className="cursor-pointer" onClick={() => setSelectedDocument(doc)}>
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,6 +67,13 @@ export function DocumentList({ documents }) {
           </div>
         </Card>
       ))}
+      
+      {selectedDocument && (
+        <DocumentViewer
+          document={selectedDocument}
+          onClose={() => setSelectedDocument(null)}
+        />
+      )}
     </div>
   );
 }

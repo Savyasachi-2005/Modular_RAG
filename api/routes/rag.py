@@ -54,6 +54,7 @@ async def index_document(
 async def query_documents(
     query_request: QueryRequest,
     session_id: str = None,
+    documents: list[str] = None,
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
@@ -64,10 +65,11 @@ async def query_documents(
     4.  **Generation**: Creates a final answer based on the context.
 
     Optionally provide session_id to save the conversation to a chat session.
+    Optionally provide documents list to filter retrieval to specific documents.
 
     This is a protected endpoint and requires authentication.
     """
-    return await rag_controller.orchestrate_rag_flow(query_request, current_user, session_id)
+    return await rag_controller.orchestrate_rag_flow(query_request, current_user, session_id, documents)
 
 
 @router.get(

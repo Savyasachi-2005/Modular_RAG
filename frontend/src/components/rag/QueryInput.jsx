@@ -36,7 +36,7 @@ export function QueryInput({ onSend, disabled }) {
         placeholder="Ask a question..."
         disabled={disabled}
         rows={1}
-        className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none text-sm transition-all"
+        className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none text-sm transition-all overflow-hidden"
         style={{ minHeight: '44px', maxHeight: '200px' }}
       />
       <button

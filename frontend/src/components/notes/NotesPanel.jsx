@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../common/Button";
 import { useToast } from "../../hooks/useToast";
 
-export function NotesPanel({ sessionId }) {
+export function NotesPanel({ sessionId, onClose }) {
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -66,11 +66,23 @@ export function NotesPanel({ sessionId }) {
     <div
       className={`border-l border-gray-200 bg-white flex flex-col h-full transition-all duration-300 ${
         isExpanded ? "w-80" : "w-12"
-      }`}
+      } md:h-full`}
     >
       {/* Header - Always Visible */}
       <div className="px-2 py-3 border-b border-gray-200">
         <div className="flex items-center justify-between">
+          {/* Close button for mobile */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="md:hidden p-1 hover:bg-gray-100 rounded transition-colors"
+              title="Close notes"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-2 hover:bg-gray-50 rounded p-1 transition-colors w-full"

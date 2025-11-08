@@ -5,7 +5,7 @@ import { TypingIndicator } from "./TypingIndicator";
 import { ragService } from "../../services/ragService";
 import { useToast } from "../../hooks/useToast";
 
-export function ChatInterface({ session, onSessionUpdate }) {
+export function ChatInterface({ session, onSessionUpdate, selectedDocuments = [] }) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -47,7 +47,7 @@ export function ChatInterface({ session, onSessionUpdate }) {
     setIsLoading(true);
 
     try {
-      const response = await ragService.query(query, 5, session.session_id);
+      const response = await ragService.query(query, 5, session.session_id, selectedDocuments);
 
       const assistantMessage = {
         role: "assistant",
@@ -76,7 +76,7 @@ export function ChatInterface({ session, onSessionUpdate }) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pt-16 md:pt-6">
         {!session ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
@@ -161,7 +161,7 @@ export function ChatInterface({ session, onSessionUpdate }) {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white px-8 py-4">
+      <div className="border-t border-gray-200 bg-white px-4 md:px-8 py-4">
         <div className="max-w-3xl mx-auto">
           <QueryInput
             onSend={handleSendMessage}

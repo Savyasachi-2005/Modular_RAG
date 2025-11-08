@@ -45,7 +45,7 @@ export function useChatSessions() {
       setSessions(prev => [session, ...prev]);
       setCurrentSessionId(session.session_id);
       setCurrentSession(session);
-      showToast({ type: 'success', message: 'New chat created' });
+      // Toast removed - not necessary for every new chat
       return session;
     } catch (error) {
       showToast({ type: 'error', message: 'Failed to create session' });
@@ -72,7 +72,7 @@ export function useChatSessions() {
         }
       }
       
-      showToast({ type: 'success', message: 'Chat deleted' });
+      // Toast removed - deletion is obvious from UI change
     } catch (error) {
       showToast({ type: 'error', message: 'Failed to delete session' });
     }
@@ -83,9 +83,18 @@ export function useChatSessions() {
     setCurrentSessionId(sessionId);
   };
 
-  // Load sessions on mount
+  // Load sessions on mount and create new one if none exist
   useEffect(() => {
-    loadSessions();
+    const initializeSessions = async () => {
+      await loadSessions();
+      // Auto-create first session if none exist
+      const stored = localStorage.getItem('has_initial_session');
+      if (!stored) {
+        await createSession('New Chat');
+        localStorage.setItem('has_initial_session', 'true');
+      }
+    };
+    initializeSessions();
   }, []);
 
   // Load current session when ID changes

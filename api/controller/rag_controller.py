@@ -56,15 +56,16 @@ class RAGController:
         return {"message": f"Document '{document.title or 'Untitled'}' indexed successfully."}
 
     async def orchestrate_rag_flow(
-        self, query_request: QueryRequest, user: Dict[str, Any], session_id: Optional[str] = None
+        self, query_request: QueryRequest, user: Dict[str, Any], session_id: Optional[str] = None, documents: Optional[list[str]] = None
     ) -> QueryResponse:
         """
         Orchestrates the full Modular RAG pipeline from query to generation.
+        Optionally filters retrieval to specific documents if provided.
         """
         query = query_request.query
         top_k = query_request.top_k
         username = user.get('username')
-        logger.info(f"User '{username}' submitted query: '{query}'")
+        logger.info(f"User '{username}' submitted query: '{query}' with document filter: {documents}")
 
         try:
             # 1. [Pre-Retrieval Module] Enhance the query (e.g., with HyDE)
@@ -72,7 +73,8 @@ class RAGController:
             
             # 2. [Retrieval Module] Retrieve documents. Fetch more than needed (e.g., 2x) for the reranker to work effectively.
             # Pass username to ensure user-specific document retrieval
-            retrieved_chunks = await rag_modules_service.retrieval_module(enhanced_query, top_k=top_k * 2, username=username)
+            # Pass documents list to filter to specific documents if provided
+            retrieved_chunks = await rag_modules_service.retrieval_module(enhanced_query, top_k=top_k * 2, username=username, documents=documents)
 
             # Handle case where no documents are retrieved
             if not retrieved_chunks:

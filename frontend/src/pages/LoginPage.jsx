@@ -21,7 +21,7 @@ export function LoginPage() {
 
     try {
       await login(username, password);
-      showToast({ type: 'success', message: 'Login successful!' });
+      // Toast removed - navigation to chat is clear enough
       navigate(ROUTES.CHAT);
     } catch (error) {
       showToast({ 

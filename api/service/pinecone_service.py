@@ -152,10 +152,10 @@ class PineconeService:
             logger.error(f"Failed to upsert vectors to FAISS: {e}")
             return False
 
-    async def query_vectors(self, query_vector: List[float], top_k: int = 5, username: str = None) -> List[Dict[str, Any]]:
+    async def query_vectors(self, query_vector: List[float], top_k: int = 5, username: str = None, documents: List[str] = None) -> List[Dict[str, Any]]:
         """
         Performs a similarity search in the local FAISS index.
-        Optionally filters results by username if provided.
+        Optionally filters results by username and/or specific documents if provided.
         """
         if not self.index or self.index.ntotal == 0:
             logger.warning("Querying an empty or uninitialized index.")
@@ -170,9 +170,9 @@ class PineconeService:
                 logger.warning("No documents available for search.")
                 return []
             
-            # If filtering by username, we need to fetch more results and filter
-            # Search with a larger top_k if username filtering is needed
-            search_k = actual_top_k * 10 if username else actual_top_k
+            # If filtering by username or documents, we need to fetch more results and filter
+            # Search with a larger top_k if filtering is needed
+            search_k = actual_top_k * 10 if (username or documents) else actual_top_k
             search_k = min(search_k, self.index.ntotal)
             
             # Search the index
@@ -198,6 +198,10 @@ class PineconeService:
                 
                 # Filter by username if provided
                 if username and metadata.get('username') != username:
+                    continue
+                
+                # Filter by documents if provided
+                if documents and metadata.get('source_filename') not in documents:
                     continue
                 
                 # Convert L2 distance to a similarity score (0 to 1). Closer to 1 is more similar.
