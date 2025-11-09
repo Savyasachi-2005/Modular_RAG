@@ -4,6 +4,12 @@ import { DocumentViewer } from './DocumentViewer';
 
 export function DocumentList({ documents }) {
   const [selectedDocument, setSelectedDocument] = useState(null);
+  
+  const handleDocumentClick = (doc) => {
+    console.log('Document clicked:', doc);
+    setSelectedDocument(doc);
+  };
+  
   if (!documents || documents.length === 0) {
     return (
       <div className="text-center py-12">
@@ -19,7 +25,12 @@ export function DocumentList({ documents }) {
   return (
     <div className="grid gap-4">
       {documents.map((doc, index) => (
-        <Card key={index} hover className="cursor-pointer" onClick={() => setSelectedDocument(doc)}>
+        <Card 
+          key={index} 
+          hover 
+          className="cursor-pointer transition-all hover:shadow-lg hover:border-orange-200" 
+          onClick={() => handleDocumentClick(doc)}
+        >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,9 +70,16 @@ export function DocumentList({ documents }) {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end gap-2">
               <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                 Indexed
+              </span>
+              <span className="text-xs text-gray-500 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Click to view
               </span>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Header } from "../components/layout/Header";
 import { ChatInterface } from "../components/rag/ChatInterface";
 import { ChatSidebar } from "../components/chat/ChatSidebar";
-import { NotesPanel } from "../components/notes/NotesPanel";
+import { RightSidebar } from "../components/layout/RightSidebar";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import { useChatSessions } from "../hooks/useChatSessions";
 
@@ -154,7 +154,7 @@ export function ChatPage() {
           />
         </div>
 
-        {/* Right Sidebar - Notes Panel */}
+        {/* Right Sidebar - Flexible Sidebar */}
         <div
           className={`
           fixed md:relative inset-y-0 right-0 z-30
@@ -166,7 +166,7 @@ export function ChatPage() {
           }
         `}
         >
-          <NotesPanel
+          <RightSidebar
             sessionId={currentSessionId}
             onClose={() => setShowRightSidebar(false)}
           />

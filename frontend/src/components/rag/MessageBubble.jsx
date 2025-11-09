@@ -102,8 +102,8 @@ export function MessageBubble({ type, content, sources = [], query = "" }) {
           {cleanContent}
         </p>
 
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-          {/* Left side - Copy button and Sources */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          {/* Actions */}
           <div className="flex items-center gap-3">
             {/* Copy Button */}
             <button
@@ -185,52 +185,6 @@ export function MessageBubble({ type, content, sources = [], query = "" }) {
                 </svg>
               </button>
             )}
-          </div>
-
-          {/* Right side - Export PDF Button */}
-          <div>
-            <button
-              onClick={handleExportPDF}
-              disabled={isExporting}
-              className="flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Export to PDF"
-            >
-              {isExporting ? (
-                <>
-                  <svg
-                    className="w-3.5 h-3.5 animate-spin"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                  <span>Exporting...</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <span>Export PDF</span>
-                </>
-              )}
-            </button>
           </div>
         </div>
       </div>

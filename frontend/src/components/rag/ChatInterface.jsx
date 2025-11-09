@@ -3,6 +3,7 @@ import { MessageBubble } from "./MessageBubble";
 import { QueryInput } from "./QueryInput";
 import { TypingIndicator } from "./TypingIndicator";
 import { ragService } from "../../services/ragService";
+import { exportService } from "../../services/exportService";
 import { useToast } from "../../hooks/useToast";
 
 export function ChatInterface({ session, onSessionUpdate, selectedDocuments = [] }) {
@@ -27,6 +28,30 @@ export function ChatInterface({ session, onSessionUpdate, selectedDocuments = []
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  const handleExportChat = async (format) => {
+    if (!session || messages.length === 0) {
+      showToast({
+        type: "error",
+        message: "No messages to export",
+      });
+      return;
+    }
+
+    try {
+      await exportService.exportChatSession(session, messages, format);
+      showToast({
+        type: 'success',
+        message: `Chat exported as ${format.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      showToast({
+        type: 'error',
+        message: error.message || 'Failed to export chat',
+      });
+    }
+  };
 
   const handleSendMessage = async (query) => {
     if (!session) {
@@ -165,7 +190,7 @@ export function ChatInterface({ session, onSessionUpdate, selectedDocuments = []
             {(!selectedDocuments || selectedDocuments.length === 0) && (
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-md">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div className="text-left">
@@ -227,6 +252,7 @@ export function ChatInterface({ session, onSessionUpdate, selectedDocuments = []
         <div className="max-w-3xl mx-auto">
           <QueryInput
             onSend={handleSendMessage}
+            onExportChat={handleExportChat}
             disabled={isLoading || !session}
           />
         </div>
