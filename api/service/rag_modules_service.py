@@ -180,45 +180,138 @@ class RAGModulesService:
             logger.error(f"Error in post-retrieval (reranking) module: {e}")
             return chunks[:5] # Fallback to original top-k
 
-    async def generation_module(self, query: str, context_chunks: List[Dict[str, Any]]) -> str:
+    async def generation_module(self, query: str, context_chunks: List[Dict[str, Any]], chat_history: List[Dict[str, Any]] = None) -> str:
         """
-        [Module: Generation] Generates the final answer with a more robust prompt,
-        instructing the model to base its answer strictly on the provided context.
+        [Module: Generation] Generates detailed, comprehensive answers optimized for TTS.
+        Uses full chat history and retrieved context for complete, thorough responses.
+        NO length limits - responses can be as long as needed to fully answer the question.
+        
+        Args:
+            query: The user's current question
+            context_chunks: Retrieved and reranked document chunks
+            chat_history: Previous messages in the conversation (optional)
         """
         try:
+            # Build context from chunks - include ALL retrieved content
             context_parts = [chunk.get("metadata", {}).get("content", "") for chunk in context_chunks]
             context = "\n\n---\n\n".join(context_parts)
             
-            prompt = f"""You are a helpful assistant. Your task is to answer the user's question based ONLY on the provided context.
+            # Build conversation history string - include full history for context
+            conversation_context = ""
+            if chat_history and len(chat_history) > 0:
+                # Include up to last 20 messages for better context understanding
+                recent_history = chat_history[-20:]
+                history_parts = []
+                for msg in recent_history:
+                    role = msg.get('role', 'user')
+                    content = msg.get('content', '')
+                    if role == 'user':
+                        history_parts.append(f"User: {content}")
+                    else:
+                        # Include full assistant responses for complete context
+                        history_parts.append(f"Assistant: {content}")
+                
+                conversation_context = "\n".join(history_parts)
+            
+            # Build the TTS-optimized prompt that allows LONG, DETAILED responses
+            prompt = f"""You are a knowledgeable, thorough assistant. Your responses will be read aloud using text-to-speech.
 
-IMPORTANT FORMATTING RULES:
-- Write your answer in plain text format WITHOUT any Markdown formatting
-- Do NOT use asterisks (*) for bold or bullet points
-- Do NOT use double asterisks (**) for headers or emphasis
-- Do NOT use hash symbols (#) for headers
-- Use simple dashes (-) or numbers (1., 2., 3.) for lists if needed
-- Write in clear, natural paragraphs
+YOUR PRIMARY GOAL: Provide COMPLETE, DETAILED, and COMPREHENSIVE answers. Do NOT summarize or shorten your response unless the user explicitly asks for a summary.
 
-If the answer is not contained within the context below, state "The answer is not available in the provided context."
+RESPONSE LENGTH RULES:
+1. Give FULL explanations. Do not cut information short.
+2. Include ALL relevant details from the provided documents.
+3. Use as many paragraphs as needed to fully answer the question.
+4. Do NOT limit yourself to brief responses. Thorough answers are preferred.
+5. Only summarize if the user specifically requests a summary.
 
-Provided Context:
+TTS FORMAT RULES (for spoken clarity):
+1. Write in clear, complete sentences that flow naturally when spoken.
+2. Use plain text paragraphs only. No bullet points, numbered lists, or markdown.
+3. Never use symbols like asterisks, hashes, underscores, backticks, or emojis.
+4. Spell out abbreviations: "for example" not "e.g.", "that is" not "i.e."
+5. Use natural, conversational language as if explaining to someone in person.
+6. Separate ideas into distinct paragraphs for better listening comprehension.
+7. Use transitional phrases like "Additionally", "Furthermore", "On the other hand" to connect ideas.
+
+CONTENT RULES:
+1. Base your answer strictly on the provided document context.
+2. Extract and present ALL important information relevant to the question.
+3. If asked about something not in the documents, clearly state that.
+4. Use the conversation history to understand references like "this", "that", "earlier", "previous".
+5. Provide context and background when helpful for understanding.
+6. Explain concepts thoroughly rather than giving brief overviews.
+
+{f'CONVERSATION HISTORY (use this to understand context and references):\n{conversation_context}\n\n' if conversation_context else ''}DOCUMENT CONTEXT (base your answer on this information):
 {context}
 
-Question: {query}
+USER QUESTION: {query}
 
-Answer (in plain text without Markdown formatting):"""
+Provide a complete, detailed answer. Do not artificially shorten your response. Include all relevant information from the documents."""
             
             answer = await gemini_service.generate_answer(prompt)
             
-            # Additional cleanup: Remove any Markdown formatting that might still appear
-            answer = self._remove_markdown_formatting(answer)
+            # Clean up any formatting that might have slipped through
+            # NOTE: This does NOT truncate or shorten the response
+            answer = self._clean_for_tts(answer)
             
-            logger.info(f"Generated answer for query: {query[:50]}...")
+            logger.info(f"Generated detailed TTS-friendly answer for query: {query[:50]}... (length: {len(answer)} chars)")
             return answer
             
         except Exception as e:
             logger.error(f"Error in generation module: {e}")
             return "I apologize, but I encountered an error while generating the answer."
+    
+    def _clean_for_tts(self, text: str) -> str:
+        """
+        Clean text to be fully TTS-compatible.
+        Removes all formatting and symbols that break text-to-speech.
+        """
+        # Remove markdown bold/italic
+        text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+        text = re.sub(r'__(.+?)__', r'\1', text)
+        text = re.sub(r'\*(.+?)\*', r'\1', text)
+        text = re.sub(r'_(.+?)_', r'\1', text)
+        
+        # Remove headers
+        text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+        
+        # Remove inline code
+        text = re.sub(r'`(.+?)`', r'\1', text)
+        
+        # Remove code blocks
+        text = re.sub(r'```[a-z]*\n?(.+?)\n?```', r'\1', text, flags=re.DOTALL)
+        
+        # Remove bullet points and convert to sentences
+        text = re.sub(r'^\s*[-•●◦▪]\s*', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^\s*\d+\.\s*', '', text, flags=re.MULTILINE)
+        
+        # Remove emojis (common Unicode ranges)
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # emoticons
+            "\U0001F300-\U0001F5FF"  # symbols & pictographs
+            "\U0001F680-\U0001F6FF"  # transport & map symbols
+            "\U0001F1E0-\U0001F1FF"  # flags
+            "\U00002702-\U000027B0"  # dingbats
+            "\U000024C2-\U0001F251"  # enclosed characters
+            "]+",
+            flags=re.UNICODE
+        )
+        text = emoji_pattern.sub('', text)
+        
+        # Replace common abbreviations
+        text = text.replace(' e.g. ', ' for example ')
+        text = text.replace(' i.e. ', ' that is ')
+        text = text.replace(' etc.', ' and so on.')
+        text = text.replace(' vs. ', ' versus ')
+        text = text.replace(' vs ', ' versus ')
+        
+        # Remove excessive whitespace and normalize
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        text = re.sub(r' {2,}', ' ', text)
+        
+        return text.strip()
     
     def _remove_markdown_formatting(self, text: str) -> str:
         """

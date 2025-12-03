@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SourceCard } from "./SourceCard";
+import { VoiceOutputPlayer } from "./VoiceOutputPlayer";
 import { ragService } from "../../services/ragService";
 import { useToast } from "../../hooks/useToast";
 
@@ -159,6 +160,12 @@ export function MessageBubble({ type, content, sources = [], query = "" }) {
                 </>
               )}
             </button>
+
+            {/* Voice Output Player - Read aloud */}
+            <VoiceOutputPlayer 
+              text={cleanContent} 
+              className="ml-1"
+            />
           </div>
         </div>
       </div>

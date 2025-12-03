@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     # API Keys
     pinecone_api_key: Optional[str] = os.getenv("PINECONE_API_KEY")
     google_api_key: Optional[str] = os.getenv("GOOGLE_API_KEY")
+    sarvam_api_key: Optional[str] = os.getenv("SARVAM_API_KEY")
     
     # Embedding Configuration
     embedding_dim: int = int(os.getenv("EMBEDDING_DIM", "768"))  # For embedding-001 model

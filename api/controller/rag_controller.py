@@ -61,6 +61,7 @@ class RAGController:
         """
         Orchestrates the full Modular RAG pipeline from query to generation.
         Optionally filters retrieval to specific documents if provided.
+        Includes full chat history for context-aware responses.
         """
         query = query_request.query
         top_k = query_request.top_k
@@ -68,6 +69,14 @@ class RAGController:
         logger.info(f"User '{username}' submitted query: '{query}' with document filter: {documents}")
 
         try:
+            # Get chat history if session_id is provided
+            chat_history = []
+            if session_id:
+                session = chat_session_service.get_session(session_id, username)
+                if session and session.get('messages'):
+                    chat_history = session['messages']
+                    logger.info(f"Loaded {len(chat_history)} messages from chat history")
+            
             # 1. [Pre-Retrieval Module] Enhance the query (e.g., with HyDE)
             enhanced_query = await rag_modules_service.pre_retrieval_module(query)
             
@@ -99,8 +108,8 @@ class RAGController:
                     sources=[]
                 )
 
-            # 4. [Generation Module] Generate the answer from the refined context.
-            final_answer = await rag_modules_service.generation_module(query, final_context_chunks)
+            # 4. [Generation Module] Generate the answer from the refined context with chat history
+            final_answer = await rag_modules_service.generation_module(query, final_context_chunks, chat_history)
             
             # 5. Format the sources for the final response
             sources = []
