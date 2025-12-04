@@ -5,6 +5,7 @@ export function DocumentSelector({ selectedDocs, onSelectionChange }) {
   const [documents, setDocuments] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadDocuments();
@@ -37,6 +38,12 @@ export function DocumentSelector({ selectedDocs, onSelectionChange }) {
     onSelectionChange([]);
   };
 
+  // Filter documents based on search query
+  const filteredDocuments = documents.filter(doc =>
+    doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doc.filename.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="px-4 py-3 border-b border-gray-200 bg-gray-50/30">
       <button
@@ -47,7 +54,7 @@ export function DocumentSelector({ selectedDocs, onSelectionChange }) {
           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span>Filter Documents</span>
+          <span>Select Documents</span>
           {selectedDocs.length > 0 && (
             <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
               {selectedDocs.length}
@@ -80,6 +87,32 @@ export function DocumentSelector({ selectedDocs, onSelectionChange }) {
             </div>
           ) : (
             <>
+              {/* Search Box */}
+              <div className="mb-2">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search documents..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-3 py-2 pl-9 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-2 p-0.5 hover:bg-gray-100 rounded"
+                    >
+                      <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-2 pb-2 border-b border-gray-100">
                 <button
                   onClick={selectAll}
@@ -94,8 +127,14 @@ export function DocumentSelector({ selectedDocs, onSelectionChange }) {
                   Clear
                 </button>
               </div>
-              <div className="max-h-48 overflow-y-auto space-y-1 pt-1">
-                {documents.map((doc) => (
+              
+              {filteredDocuments.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-xs text-gray-500">No documents found</p>
+                </div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto space-y-1 pt-1">
+                  {filteredDocuments.map((doc) => (
                   <label
                     key={doc.filename}
                     className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md cursor-pointer transition-all ${
@@ -122,8 +161,9 @@ export function DocumentSelector({ selectedDocs, onSelectionChange }) {
                       </p>
                     </div>
                   </label>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>

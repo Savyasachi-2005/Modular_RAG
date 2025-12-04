@@ -1,4 +1,4 @@
-export function Card({ children, hover = false, padding = 'md', shadow = true, className = '' }) {
+export function Card({ children, hover = false, padding = 'md', shadow = true, className = '', onClick, ...props }) {
   const paddings = {
     sm: 'p-4',
     md: 'p-6',
@@ -8,6 +8,8 @@ export function Card({ children, hover = false, padding = 'md', shadow = true, c
   return (
     <div 
       className={`bg-white border border-gray-200 rounded-lg ${paddings[padding]} ${shadow ? 'shadow-sm' : ''} ${hover ? 'hover:shadow-md hover:border-gray-300 transition-all duration-200' : ''} ${className}`}
+      onClick={onClick}
+      {...props}
     >
       {children}
     </div>

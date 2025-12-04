@@ -33,10 +33,35 @@ function stripMarkdown(text) {
 export function MessageBubble({ type, content, sources = [], query = "" }) {
   const [showSources, setShowSources] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const { showToast } = useToast();
+
+  // Safety check for content
+  if (!content) {
+    console.warn("MessageBubble received empty content");
+    return null;
+  }
 
   // Clean the content from any Markdown formatting
   const cleanContent = stripMarkdown(content);
+
+  const handleCopyText = async () => {
+    try {
+      await navigator.clipboard.writeText(cleanContent);
+      setIsCopied(true);
+      showToast({ type: "success", message: "Text copied to clipboard!" });
+
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch {
+      showToast({
+        type: "error",
+        message: "Failed to copy text. Please try again.",
+      });
+    }
+  };
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -78,8 +103,53 @@ export function MessageBubble({ type, content, sources = [], query = "" }) {
           {cleanContent}
         </p>
 
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Copy Button */}
+            <button
+              onClick={handleCopyText}
+              className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors"
+              title="Copy text"
+            >
+              {isCopied ? (
+                <>
+                  <svg
+                    className="w-3.5 h-3.5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span className="text-green-600">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+
+            {/* Sources Button */}
             {sources && sources.length > 0 && (
               <button
                 onClick={() => setShowSources(!showSources)}
