@@ -61,20 +61,4 @@ To overcome the limitations of standard chunking, DocuMind employs a **Parent-Ch
 -   **Deployment:** Vercel (Frontend), Render (Backend)
 ---
 
-## ⚠️ Project Protection Notice
-
-This project is **protected and authenticated** with embedded signature verification. The signature system ensures proper attribution and project integrity.
-
-**Key Protection Features:**
-- 🔒 **Signature Verification:** Both backend and frontend verify the project signature on startup
-- 🛡️ **Tamper Protection:** Removing or modifying the signature will prevent the application from running
-- 👤 **Developer Attribution:** Clear attribution to the original developer throughout the application
-- 🔐 **License Protection:** Built-in license key validation system
-
-**Protected Files:**
-- `.signature` (Backend & Frontend signature files)
-- `api/lib/signature_guard.py` (Backend verification service)
-- `frontend/src/utils/signatureGuard.js` (Frontend verification service)
-
-**⚠️ WARNING:** Do not remove or modify the signature files or verification code. The application will not function without valid signatures.
 

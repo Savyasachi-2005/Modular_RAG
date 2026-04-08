@@ -1,14 +1,6 @@
 import logging
 import os
 
-# === PROJECT SIGNATURE VERIFICATION - DO NOT REMOVE ===
-# This verification is critical for project operation
-from lib.signature_guard import verify_signature, get_developer_info
-if not verify_signature():
-    import sys
-    sys.exit(1)
-# === END SIGNATURE VERIFICATION ===
-
 # Disable tokenizers parallelism to avoid deadlocks/warnings
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from contextlib import asynccontextmanager
@@ -41,9 +33,7 @@ async def lifespan(app: FastAPI):
     Handles startup and shutdown events.
     Only connects to database on startup to avoid serverless cold-start failures.
     """
-    # Verify signature on startup
-    dev_info = get_developer_info()
-    logger.info(f"Starting QueryWise API... [Built by: {dev_info['developer']}]")
+    logger.info("Starting QueryWise API...")
     
     # Connect to MongoDB
     try:
@@ -102,12 +92,9 @@ app.add_middleware(
 # --- Health check endpoints ---
 @app.get("/")
 async def root():
-    dev_info = get_developer_info()
     return {
         "message": "QueryWise API is running", 
-        "status": "healthy",
-        "developer": dev_info['developer'],
-        "build": dev_info['signature']
+        "status": "healthy"
     }
 
 @app.get("/health")

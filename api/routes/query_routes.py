@@ -58,7 +58,7 @@ async def execute_query(
     
     **Workflow:**
     1. Extracts database schema
-    2. Sends schema + question to Gemini LLM
+    2. Sends schema + question to Groq Llama
     3. Generates SQL query
     4. Validates SQL (security checks)
     5. Executes query

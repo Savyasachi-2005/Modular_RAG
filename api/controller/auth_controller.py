@@ -8,6 +8,7 @@ from service.infrastructure.auth_service import (
     get_password_hash
 )
 from service.infrastructure.user_service import user_service
+from service.infrastructure.database_service import DatabaseConnectionError
 from lib.config import settings
 import logging
 
@@ -20,35 +21,69 @@ class AuthController:
         Handle user registration
         """
         try:
+            username = user_data.username.strip()
+            email = user_data.email.strip().lower() if user_data.email and user_data.email.strip() else None
+
+            if len(username) < 3 or len(username) > 50:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Username must be between 3 and 50 characters"
+                )
+
+            if not username.replace('_', '').replace('-', '').isalnum():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Username can only contain letters, numbers, underscores, and hyphens"
+                )
+
             # Check if user already exists
-            existing_user = await user_service.get_user_by_username(user_data.username)
+            existing_user = await user_service.get_user_by_username(username)
             if existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Username already registered"
                 )
+
+            if email:
+                existing_email = await user_service.get_user_by_email(email)
+                if existing_email:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Email already registered"
+                    )
             
             # Hash password
             hashed_password = get_password_hash(user_data.password)
             
             # Create user
             user = await user_service.create_user(
-                username=user_data.username,
+                username=username,
                 hashed_password=hashed_password,
-                email=user_data.email
+                email=email
             )
             
-            logger.info(f"User {user_data.username} registered successfully")
+            logger.info(f"User {username} registered successfully")
             
             return {
                 "message": "User registered successfully",
                 "user_id": user["user_id"],
                 "username": user["username"],
-                "email": user["email"]
+                "email": user.get("email")
             }
             
         except HTTPException:
             raise
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except DatabaseConnectionError as e:
+            logger.error(f"Database connection error during registration: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(e)
+            )
         except Exception as e:
             logger.error(f"Error registering user: {e}")
             raise HTTPException(
@@ -84,6 +119,12 @@ class AuthController:
             
         except HTTPException:
             raise
+        except DatabaseConnectionError as e:
+            logger.error(f"Database connection error during login: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(e)
+            )
         except Exception as e:
             logger.error(f"Error during login: {e}")
             raise HTTPException(

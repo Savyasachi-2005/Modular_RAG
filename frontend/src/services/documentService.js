@@ -3,8 +3,14 @@ import api from './api';
 export const documentService = {
   async deleteDocuments(filenames) {
     // POST to backend to delete documents and vectors
-    const response = await api.post('/rag/delete-documents', { filenames });
-    return response.data;
+    try {
+      const response = await api.post('/rag/delete-documents', { filenames });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to delete documents';
+      console.error('Delete error:', error);
+      throw new Error(errorMessage);
+    }
   },
 
   async uploadFile(file, onProgress) {

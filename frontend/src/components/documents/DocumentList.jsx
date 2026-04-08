@@ -51,7 +51,9 @@ export function DocumentList({ documents, onDocumentsChanged, isSelectionMode, o
       setShowConfirm(false);
       onDocumentsChanged?.();
     } catch (e) {
-      alert('Failed to delete documents.');
+      const errorMsg = e.message || 'Failed to delete documents.';
+      alert(errorMsg);
+      console.error('Document deletion error:', e);
     } finally {
       setDeleting(false);
     }

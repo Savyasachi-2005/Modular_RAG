@@ -1,11 +1,13 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from lib.config import settings
-from lib.signature_guard import verify_signature
 import logging
 import os
-
-verify_signature()  # Critical - DO NOT REMOVE
 logger = logging.getLogger(__name__)
+
+
+class DatabaseConnectionError(Exception):
+    """Raised when the application cannot connect to MongoDB."""
+    pass
 
 class DatabaseService:
     def __init__(self):
@@ -33,7 +35,10 @@ class DatabaseService:
             
         except Exception as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
-            raise e
+            host_info = self.db_url.split('@')[-1] if '@' in self.db_url else self.db_url
+            raise DatabaseConnectionError(
+                f"Unable to connect to MongoDB ({host_info}). Check DATABASE_URL and DNS/network connectivity."
+            ) from e
 
     async def _create_indexes(self):
         """Create necessary indexes."""

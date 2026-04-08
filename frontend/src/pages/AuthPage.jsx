@@ -68,6 +68,18 @@ export function AuthPage() {
     const handleSignup = async (e) => {
         e.preventDefault();
 
+        const normalizedUsername = username.trim();
+
+        if (normalizedUsername.length < 3 || normalizedUsername.length > 50) {
+            showToast({ type: 'error', message: 'Username must be between 3 and 50 characters' });
+            return;
+        }
+
+        if (!normalizedUsername.replace(/_/g, '').replace(/-/g, '').match(/^[a-zA-Z0-9]+$/)) {
+            showToast({ type: 'error', message: 'Username can only contain letters, numbers, underscores, and hyphens' });
+            return;
+        }
+
         if (password !== confirmPassword) {
             showToast({ type: 'error', message: 'Passwords do not match' });
             return;
@@ -81,7 +93,7 @@ export function AuthPage() {
         setLoading(true);
 
         try {
-            await signup({ username, email, password });
+            await signup({ username: normalizedUsername, email: email?.trim(), password });
             showToast({ type: 'success', message: 'Account created successfully! You can now sign in.' });
             setIsLogin(true);
             setPassword('');

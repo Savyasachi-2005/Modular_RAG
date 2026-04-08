@@ -1,13 +1,13 @@
 from typing import Optional
 import logging
 import re
-from service.rag.gemini_service import gemini_service
+from service.rag.groq_service import groq_service
 
 logger = logging.getLogger(__name__)
 
 
 class SQLGenerationService:
-    """Service for generating SQL queries from natural language using Gemini LLM"""
+    """Service for generating SQL queries from natural language using Groq Llama."""
     
     def __init__(self):
         self.dangerous_keywords = [
@@ -23,7 +23,7 @@ class SQLGenerationService:
         model: Optional[str] = None
     ) -> str:
         """
-        Generate SQL query from natural language using Gemini LLM
+        Generate SQL query from natural language using Groq Llama.
         
         Args:
             natural_language_query: User's question in natural language
@@ -43,9 +43,12 @@ class SQLGenerationService:
                 formatted_schema
             )
             
-            # Generate SQL using Gemini
-            logger.info(f"Generating SQL for query: {natural_language_query} using model: {model}")
-            response = await gemini_service.generate_answer(prompt, model=model)
+            # Force DB chat SQL generation to Llama/Groq, regardless of requested model.
+            selected_model = model or "llama-3.3-70b-versatile"
+            logger.info(
+                f"Generating SQL for query via Groq Llama. requested_model={selected_model}"
+            )
+            response = await groq_service.generate_answer(prompt)
             
             # Extract clean SQL from response
             sql_query = self._extract_sql_from_response(response)

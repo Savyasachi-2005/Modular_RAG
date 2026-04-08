@@ -23,11 +23,18 @@ class UserService:
         """Create a new user in MongoDB."""
         try:
             collection = await self.get_collection()
+            normalized_email = email.strip().lower() if email and email.strip() else None
             
             # Check if username already exists
             existing_user = await collection.find_one({"username": username})
             if existing_user:
                 raise ValueError(f"Username '{username}' is already taken")
+
+            # Check if email already exists (only when provided)
+            if normalized_email:
+                existing_email = await collection.find_one({"email": normalized_email})
+                if existing_email:
+                    raise ValueError("Email is already registered")
             
             # Generate unique user_id
             user_id = str(uuid.uuid4())
@@ -36,10 +43,13 @@ class UserService:
                 "user_id": user_id,
                 "username": username,
                 "hashed_password": hashed_password,
-                "email": email,
                 "created_at": datetime.utcnow().isoformat(),
                 "is_active": True
             }
+
+            # Do not store empty email values to keep sparse unique index behavior correct.
+            if normalized_email:
+                user_data["email"] = normalized_email
             
             result = await collection.insert_one(user_data)
             
@@ -64,7 +74,7 @@ class UserService:
             
         except Exception as e:
             logger.error(f"Error fetching user {username}: {e}")
-            return None
+            raise e
 
     async def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve a user by user_id."""
@@ -79,7 +89,7 @@ class UserService:
             
         except Exception as e:
             logger.error(f"Error fetching user by id {user_id}: {e}")
-            return None
+            raise e
 
     async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
         """Retrieve a user by email."""
@@ -97,7 +107,7 @@ class UserService:
             
         except Exception as e:
             logger.error(f"Error fetching user by email {email}: {e}")
-            return None
+            raise e
 
 
     async def update_api_keys(self, user_id: str, api_keys: Dict[str, str]) -> bool:

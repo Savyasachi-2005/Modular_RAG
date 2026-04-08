@@ -4,18 +4,8 @@ This directory contains test files for the project.
 
 ## Running Tests
 
-### Signature Tests
+Use the standard Python test runner for any project tests.
 
 ```bash
-python3 tests/test_signature.py
+python3 -m unittest
 ```
-
-Or using unittest:
-
-```bash
-python3 -m unittest tests/test_signature.py
-```
-
-## Test Files
-
-- `test_signature.py` - Tests for signature protection system
